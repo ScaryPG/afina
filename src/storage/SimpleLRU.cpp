@@ -35,6 +35,10 @@ bool SimpleLRU::Set(const std::string &key, const std::string &value) {
     if (it == _lru_index.end()) {
         return false;
     }
+    size_t size = key.size() + value.size();
+    if (size > _max_size) {
+        return false;
+    }
     while (_cur_size + value.size() - it->second.get().value.size() > _max_size) {
         if (!DeleteNode()) {
             return false;
