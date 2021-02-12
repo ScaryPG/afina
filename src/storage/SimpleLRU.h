@@ -54,6 +54,16 @@ private:
         std::unique_ptr<lru_node> next;
     };
 
+private:
+    bool AddNode(const std::string& key, const std::string& value);
+
+    bool DeleteNode();
+
+    void MoveNode(lru_node& node);
+
+    bool UpdateNode(lru_node& node, const std::string& value);
+
+private:
     // Maximum number of bytes could be stored in this cache.
     // i.e all (keys+values) must be less the _max_size
     std::size_t _max_size;
@@ -72,14 +82,6 @@ private:
     std::map<std::reference_wrapper<const std::string>,
              std::reference_wrapper<lru_node>,
              std::less<std::string>> _lru_index;
-
-    bool AddNode(const std::string& key, const std::string& value);
-
-    bool DeleteNode();
-
-    void MoveNode(lru_node& node);
-
-    bool UpdateNode(lru_node& node, const std::string& value);
 };
 
 } // namespace Backend
