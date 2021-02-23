@@ -63,7 +63,7 @@ bool SimpleLRU::Delete(const std::string &key) {
         _lru_head = std::move(_lru_head->next);
         _lru_head->prev = nullptr;
     }
-    _lru_index.erase(std::reference_wrapper<const std::string>(key));
+    _lru_index.erase(it);
     return true;
 }
 
