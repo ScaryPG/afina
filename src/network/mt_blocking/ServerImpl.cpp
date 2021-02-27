@@ -149,6 +149,7 @@ void ServerImpl::OnRun() {
             } else {
                 close(client_socket);
             }
+            lock.unlock();
         }
     }
 
