@@ -134,10 +134,10 @@ void ServerImpl::OnRun() {
 
         // Configure read timeout
         {
-//            struct timeval tv;
-//            tv.tv_sec = 5; // TODO: make it configurable
-//            tv.tv_usec = 0;
-//            setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (const char *)&tv, sizeof tv);
+            struct timeval tv;
+            tv.tv_sec = 5; // TODO: make it configurable
+            tv.tv_usec = 0;
+            setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (const char *)&tv, sizeof tv);
         }
 
         // TODO: Start new thread and process data from/to connection
