@@ -142,6 +142,7 @@ void ServerImpl::OnRun() {
 
         // TODO: Start new thread and process data from/to connection
         {
+            std::unique_lock<std::mutex> lock(_m);
             if (_client_sockets.size() < _max_client_sockets) {
                 _client_sockets.insert(client_socket);
                 std::thread(&ServerImpl::Execute, this, client_socket).detach();
