@@ -140,7 +140,6 @@ void ServerImpl::OnRun() {
             setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (const char *)&tv, sizeof tv);
         }
 
-        // TODO: Start new thread and process data from/to connection
         {
             std::unique_lock<std::mutex> lock(_m);
             if (_client_sockets.size() < _max_client_sockets) {
@@ -149,7 +148,6 @@ void ServerImpl::OnRun() {
             } else {
                 close(client_socket);
             }
-            lock.unlock();
         }
     }
 
