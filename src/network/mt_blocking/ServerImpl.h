@@ -5,6 +5,8 @@
 #include <thread>
 
 #include <afina/network/Server.h>
+#include <condition_variable>
+#include <set>
 
 namespace spdlog {
 class logger;
@@ -32,6 +34,8 @@ public:
     // See Server.h
     void Join() override;
 
+    void Execute(int client_socket);
+
 protected:
     /**
      * Method is running in the connection acceptor thread
@@ -52,6 +56,14 @@ private:
 
     // Thread to run network on
     std::thread _thread;
+
+    std::set<int> _client_sockets;
+
+    std::condition_variable _cv;
+
+    std::mutex _m;
+
+    const int _max_client_sockets = 5;
 };
 
 } // namespace MTblocking
