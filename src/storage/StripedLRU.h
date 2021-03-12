@@ -50,7 +50,7 @@ public:
     }
 
 private:
-    size_t _stripe_count = 4;
+    size_t _stripe_count = 8;
     std::vector<SimpleLRU> _shards;
 };
 
