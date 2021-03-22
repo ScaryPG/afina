@@ -111,7 +111,6 @@ private:
     size_t _high_watermark;
     size_t _max_queue_size;
     std::chrono::milliseconds _idle_time;
-    std::mutex _threads_lock;
 };
 
 } // namespace Concurrency

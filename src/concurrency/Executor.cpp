@@ -26,8 +26,11 @@ Executor::Executor(size_t low_watermark, size_t high_watermark,
     state = State::kRun;
     _occupied_threads = 0;
 
-    for (size_t i = 0; i < _low_watermark; ++i) {
-        create_thread();
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        for (size_t i = 0; i < _low_watermark; ++i) {
+            create_thread();
+        }
     }
 }
 
@@ -55,7 +58,10 @@ void perform(Executor *executor) {
             }
         }
         task();
-        executor->_occupied_threads -= 1;
+        {
+            std::unique_lock<std::mutex> lock(executor->mutex);
+            executor->_occupied_threads -= 1;
+        }
     }
 }
 
@@ -79,13 +85,11 @@ Executor::~Executor() {
 }
 
 void Executor::create_thread() {
-    std::unique_lock<std::mutex> lock(_threads_lock);
     threads.emplace_back(perform, this);
 }
 
 void Executor::destroy_thread() {
     auto this_thread = std::this_thread::get_id();
-    std::unique_lock<std::mutex> lock(_threads_lock);
     auto it = std::find_if(threads.begin(),
                            threads.end(),
                            [=](std::thread &t) { return t.get_id() == this_thread; });
