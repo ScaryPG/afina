@@ -30,6 +30,8 @@ public:
         }
     }
 
+    SimpleLRU(SimpleLRU &&) = default;
+
     // Implements Afina::Storage interface
     bool Put(const std::string &key, const std::string &value) override;
 
