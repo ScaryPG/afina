@@ -79,7 +79,7 @@ private:
     /**
      * Main function that all pool threads are running. It polls internal task queue and execute tasks
      */
-    friend void perform(Executor *executor);
+    friend void perform(Executor *executor) noexcept;
 
     /**
      * Mutex to protect state below from concurrent modification
@@ -111,6 +111,7 @@ private:
     size_t _high_watermark;
     size_t _max_queue_size;
     std::chrono::milliseconds _idle_time;
+    std::condition_variable _stop_condition;
 };
 
 } // namespace Concurrency
