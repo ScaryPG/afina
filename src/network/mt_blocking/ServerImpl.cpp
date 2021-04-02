@@ -18,6 +18,7 @@
 #include <spdlog/logger.h>
 
 #include <afina/Storage.h>
+#include <afina/concurrency/Executor.h>
 #include <afina/execute/Command.h>
 #include <afina/logging/Service.h>
 
@@ -108,6 +109,7 @@ void ServerImpl::OnRun() {
     Protocol::Parser parser;
     std::string argument_for_command;
     std::unique_ptr<Execute::Command> command_to_execute;
+    Afina::Concurrency::Executor thread_pool(2, 8, 256, std::chrono::milliseconds(5000));
     while (running.load()) {
         _logger->debug("waiting for connection...");
 
@@ -135,16 +137,15 @@ void ServerImpl::OnRun() {
         // Configure read timeout
         {
             struct timeval tv;
-            tv.tv_sec = 5; // TODO: make it configurable
+            tv.tv_sec = 5000; // TODO: make it configurable
             tv.tv_usec = 0;
             setsockopt(client_socket, SOL_SOCKET, SO_RCVTIMEO, (const char *)&tv, sizeof tv);
         }
 
         {
             std::unique_lock<std::mutex> lock(_m);
-            if (_client_sockets.size() < _max_client_sockets) {
+            if (thread_pool.Execute(&ServerImpl::Execute, this, client_socket)) {
                 _client_sockets.insert(client_socket);
-                std::thread(&ServerImpl::Execute, this, client_socket).detach();
             } else {
                 close(client_socket);
             }

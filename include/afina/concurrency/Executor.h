@@ -27,8 +27,9 @@ class Executor {
         // Threadppol is stopped
         kStopped
     };
-
-    Executor(std::string name, int size);
+public:
+    Executor(size_t low_watermark, size_t high_watermark,
+             size_t max_queue_size, std::chrono::milliseconds idle_time);
     ~Executor();
 
     /**
@@ -38,6 +39,9 @@ class Executor {
      * In case if await flag is true, call won't return until all background jobs are done and all threads are stopped
      */
     void Stop(bool await = false);
+
+    void create_thread();
+    void destroy_thread();
 
     /**
      * Add function to be executed on the threadpool. Method returns true in case if task has been placed
@@ -51,8 +55,12 @@ class Executor {
         auto exec = std::bind(std::forward<F>(func), std::forward<Types>(args)...);
 
         std::unique_lock<std::mutex> lock(this->mutex);
-        if (state != State::kRun) {
+        if (state != State::kRun || tasks.size() == _max_queue_size) {
             return false;
+        }
+
+        if (threads.size() == _occupied_threads && threads.size() < _high_watermark) {
+            create_thread();
         }
 
         // Enqueue new task
@@ -63,15 +71,15 @@ class Executor {
 
 private:
     // No copy/move/assign allowed
-    Executor(const Executor &);            // = delete;
-    Executor(Executor &&);                 // = delete;
-    Executor &operator=(const Executor &); // = delete;
-    Executor &operator=(Executor &&);      // = delete;
+    Executor(const Executor &) = delete;
+    Executor(Executor &&) = delete;
+    Executor &operator=(const Executor &) = delete;
+    Executor &operator=(Executor &&) = delete;
 
     /**
      * Main function that all pool threads are running. It polls internal task queue and execute tasks
      */
-    friend void perform(Executor *executor);
+    friend void perform(Executor *executor) noexcept;
 
     /**
      * Mutex to protect state below from concurrent modification
@@ -97,6 +105,13 @@ private:
      * Flag to stop bg threads
      */
     State state;
+
+    size_t _occupied_threads;
+    size_t _low_watermark;
+    size_t _high_watermark;
+    size_t _max_queue_size;
+    std::chrono::milliseconds _idle_time;
+    std::condition_variable _stop_condition;
 };
 
 } // namespace Concurrency
